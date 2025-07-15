@@ -1,113 +1,14 @@
-# Spendyy - Private, Local-First Budget Tracker
+# Run and deploy your AI Studio app
 
-Spendyy is a powerful budget analysis tool designed to be as private as you desire. It helps you track historical spending, manage custom categories, and measure progress against your financial goals—all while keeping your data securely on your own device.
+This contains everything you need to run your app locally.
 
-**Your Data, Your Control:**
-Spendyy runs entirely in your browser. All transaction data, categories, and settings are stored locally using your browser's `localStorage`. **Nothing is ever sent to a remote server unless you use the AI categorization.** This means you have complete control and ownership of your financial information. You can even watch your local data file grow as you add transactions and delete it completely at any time.
+## Run Locally
 
-**AI-Assist for Easy Organization:**
-To make categorizing transactions effortless, Spendyy includes an optional AI-assist feature powered by the Google Gemini API. This is an on-demand tool; your anonymized transaction details (payee and description) are only sent to the API when you explicitly ask for a suggestion. You can disable this feature entirely and manage your API key in the settings.
+**Prerequisites:**  Node.js
 
----
 
-## 📸 Screenshots
-
-**Dashboard View**
-*Pending*
-
-**Transactions Management**
-*Pending*
-
-**CSV Upload & Mapping**
-*Pending*
-
-**Mobile View**
-*Pending*
-
----
-
-## ✨ Key Features
-
-*   **📊 Interactive Dashboard:** Get a clear overview of your finances with stats for income, expenses, and net savings. Filter your view by day, week, month, or year.
-*   **📈 Visual Reports:**
-    *   **Spending by Category:** A dynamic pie chart to see where your money goes.
-    *   **Spending Trends:** A bar chart to track spending patterns over time, with options to group by total, category, or envelope.
-*   **✉️ Envelope Budgeting:**
-    *   **Spending Pools:** Set monthly budgets for categories like "Groceries" or "Dining Out".
-    *   **Saving Goals:** Track your progress towards goals like "Vacation Fund" or "New Laptop".
-*   **🤖 AI-Powered Categorization:**
-    *   **Smart Suggestions:** Get single-click category suggestions for uncategorized transactions.
-    *   **Batch AI Assist:** Let the AI categorize all your uncategorized transactions in one go.
-    *   Powered by Google's `gemini-2.5-flash` for fast and accurate results.
-*   **🧾 Robust Transaction Management:**
-    *   Manually add, edit, and delete transactions.
-    *   Easily split transaction amounts (e.g., when you've paid for a shared meal).
-*   **⬆️ Flexible Data Import:**
-    *   Upload CSV files from your bank.
-    *   An intuitive mapping interface to match your file's columns to Spendyy's fields.
-    *   Smart parsing of amounts (handles positive/negative values automatically).
-*   **📂 Data Portability:**
-    *   **Export to CSV:** Download your transaction data for any year, or all-time, for use in other applications.
-    *   **Backup & Restore:** Create a full JSON backup of all your data (transactions, categories, envelopes, settings) and restore from it at any time.
-*   **⚙️ Customization & Control:**
-    *   Create and manage your own spending categories with custom names and colors.
-    *   Mark categories as "Transfers" to exclude them from expense reports.
-    *   Configure AI settings, including enabling/disabling features and managing your API key.
-*   **🔒 Privacy First:** All your financial data is stored locally in your browser's `localStorage`. Nothing is ever sent to a server, except for the anonymized transaction details sent to the Gemini API for categorization suggestions (and only when you explicitly ask for it).
-*   **📱 Responsive Design:** A clean, modern UI that works beautifully on both desktop and mobile devices.
-
----
-
-## 🛠️ Technology Stack
-
-*   **Frontend:** React & TypeScript
-*   **AI Integration:** Google Gemini API (`@google/genai`)
-*   **Styling:** Tailwind CSS
-*   **Animations:** Framer Motion
-*   **Charting:** Recharts
-*   **CSV Parsing:** Papaparse
-
----
-
-## 🚀 Getting Started
-
-This application is designed to be run as a static website and does **not** require `npm install` or a `build` step.
-
-### Prerequisites
-
-1.  A modern web browser (Chrome, Firefox, Safari, Edge).
-2.  (Optional) A Google Gemini API Key if you wish to use the AI features. You can get one from [Google AI Studio](https://aistudio.google.com/app/apikey).
-3.  Python (or any other simple web server) installed on your system.
-
-### Configuration
-
-The application requires the Gemini API key to be available as an environment variable. The code is pre-configured to read `process.env.API_KEY`.
-
-For local testing, you can add your API key directly in the `index.html` file. **WARNING: For development only. Do not commit this to a public repository.**
-
-```html
-<!-- In index.html, inside the <head> tag -->
-<script>
-  // This simulates the environment variable for local testing.
-  var process = { env: { API_KEY: "YOUR_GEMINI_API_KEY_HERE" } };
-</script>
-<script type="importmap">
-  {
-    "imports": { ... }
-  }
-</script>
-```
----
-
-## Running the App
-Clone or download the repository.
-Open your terminal or command prompt and navigate to the project's root directory.
-Start a simple local web server. The easiest way is with Python:
-``` bash
-# For Python 3
-python3 -m http.server
-
-# For Python 2
-python -m SimpleHTTPServer
-```
-Open your browser and navigate to http://localhost:8000. The app will now run correctly.
+1. Install dependencies:
+   `npm install`
+2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
+3. Run the app:
+   `npm run dev`
