@@ -157,7 +157,7 @@ const StatsGroup: React.FC<{transactions: Transaction[], categories: Category[]}
     return (
         <Card className="p-0">
             <div className="p-4 border-b border-slate-200">
-                <h3 className="text-lg font-semibold text-slate-800">Key Stats</h3>
+                <h3 className="text-lg font-semibold text-slate-800">Key Insights</h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-2 p-4">
                 <StatCard title="Income" value={currencyFormatter.format(stats.income)} icon={<ArrowUpRight size={24} className="text-white"/>} color="bg-accent-income" />
