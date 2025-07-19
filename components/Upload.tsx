@@ -71,7 +71,7 @@ const MappingModal: React.FC<{
         <Modal isOpen={isOpen} onClose={onClose} title="Map CSV Columns">
             <div className="space-y-6">
                 <div>
-                    <p className="text-sm text-slate-600 mb-4">Match the columns from your CSV file to the required transaction fields. We've made some initial guesses for you.</p>
+                    <p className="text-sm text-slate-600 mb-4">Match the columns from your CSV file to the required transaction fields. The app makes some initial guesses for you.</p>
                 </div>
 
                 <div className="space-y-4">
@@ -277,7 +277,7 @@ export const Upload: React.FC<{
                         <ul className="list-disc list-inside text-sm text-blue-700 mt-3 space-y-1">
                             <li><strong>You are in control:</strong> Your data stays on your device. You can export a full backup or delete everything at any time from the Settings page.</li>
                             <li><strong>Data Persistence:</strong> If you clear your browser's cache or site data, all your financial information in this app will be <strong className="font-semibold">permanently deleted</strong>.</li>
-                            <li><strong>Recommendation:</strong> Ensure you make a backup (Settings > Export Full Backup) of your data regularly and store it in a safe place.</li>
+                            <li><strong>Recommendation:</strong> Ensure you make a backup (Settings → Export Full Backup) of your data regularly and store it in a safe place.</li>
                         </ul>
                     </div>
                 </div>
