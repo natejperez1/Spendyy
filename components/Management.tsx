@@ -140,9 +140,13 @@ const EnvelopeManager: React.FC<{
                            </div>
                            <div>
                                <h4 className="font-semibold text-slate-800">{e.name}</h4>
-                               <p className="text-sm text-slate-500">
-                                {e.type === 'spending' ? `Budget: ${currencyFormatter.format(e.budget)}/mo` : `Goal: ${currencyFormatter.format(e.budget)}`}
-                               </p>
+                                <p className="text-sm text-slate-500">
+                                    {e.type === 'spending' 
+                                        ? `Budget: ${currencyFormatter.format(e.budget)}/mo` 
+                                        : `Contribution: ${currencyFormatter.format(e.budget)}/mo`
+                                    }
+                                    {e.type === 'goal' && e.finalTarget ? ` | Goal: ${currencyFormatter.format(e.finalTarget)}` : ''}
+                                </p>
                            </div>
                        </div>
                        <div className="flex items-center gap-2">
@@ -181,6 +185,8 @@ const EnvelopeModal: React.FC<{
     const [budget, setBudget] = useState(0);
     const [type, setType] = useState<Envelope['type']>('spending');
     const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+    const [finalTarget, setFinalTarget] = useState<number | ''>('');
+
 
     React.useEffect(() => {
         if(isOpen){
@@ -188,6 +194,7 @@ const EnvelopeModal: React.FC<{
             setBudget(envelope?.budget || 0);
             setSelectedCategories(envelope?.categoryIds || []);
             setType(envelope?.type || 'spending');
+            setFinalTarget(envelope?.finalTarget || '');
         }
     }, [isOpen, envelope])
 
@@ -199,7 +206,13 @@ const EnvelopeModal: React.FC<{
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        const envelopeData = { name, budget, categoryIds: selectedCategories, type };
+        const envelopeData = { 
+            name, 
+            budget, 
+            categoryIds: selectedCategories, 
+            type,
+            finalTarget: Number(finalTarget) > 0 ? Number(finalTarget) : undefined
+        };
         if (envelope) {
             updateEnvelope({ ...envelope, ...envelopeData });
         } else {
@@ -241,10 +254,19 @@ const EnvelopeModal: React.FC<{
                 </div>
                 <div>
                     <label htmlFor="envelopeBudget" className="block text-sm font-medium text-slate-700 mb-1">
-                        {type === 'spending' ? 'Monthly Budget' : 'Goal Target'}
+                        {type === 'spending' ? 'Monthly Budget' : 'Monthly Contribution Goal'}
                     </label>
                     <input id="envelopeBudget" type="number" value={budget} onChange={e => setBudget(parseFloat(e.target.value) || 0)} required min="0" step="0.01" className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition" />
                 </div>
+                
+                {type === 'goal' && (
+                     <div>
+                        <label htmlFor="envelopeFinalTarget" className="block text-sm font-medium text-slate-700 mb-1">Final Target Sum (Optional)</label>
+                        <input id="envelopeFinalTarget" type="number" value={finalTarget} onChange={e => setFinalTarget(e.target.value === '' ? '' : parseFloat(e.target.value) || 0)} min="0" step="0.01" className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition" />
+                        <p className="text-xs text-slate-500 mt-2">Set a total amount you want to save for this goal. Leave at 0 or empty if there's no final target.</p>
+                    </div>
+                )}
+
                 <div>
                     <label className="block text-sm font-medium text-slate-700 mb-2">Assign Categories</label>
                     <div className="max-h-40 overflow-y-auto space-y-2 p-3 bg-slate-50 rounded-lg border border-slate-200">

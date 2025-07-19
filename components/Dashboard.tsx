@@ -440,7 +440,7 @@ const EnvelopesSummary: React.FC<{
         }, {} as Record<string, number>);
     }, [periodTransactions, incomeCategoryId, transferCategoryIds]);
 
-    // For saving goals, we track contributions from ALL transactions, over all time.
+    // For saving goals, we track contributions from ALL transactions over all time for total progress.
     const contributionsByCategoryIdAllTime = useMemo(() => {
         return allTransactions.reduce((acc, t) => {
             const isTransfer = transferCategoryIds.has(t.categoryId);
@@ -455,6 +455,22 @@ const EnvelopesSummary: React.FC<{
             return acc;
         }, {} as Record<string, number>);
     }, [allTransactions, incomeCategoryId, transferCategoryIds]);
+
+    // And we track contributions for the selected period to display period-specific info.
+    const contributionsByCategoryIdInPeriod = useMemo(() => {
+        return periodTransactions.reduce((acc, t) => {
+            const isTransfer = transferCategoryIds.has(t.categoryId);
+            // A debit to a transfer category is a contribution
+            if (isTransfer && t.type === 'Debit') {
+                acc[t.categoryId] = (acc[t.categoryId] || 0) + t.amount;
+            }
+            // A credit to a non-transfer, non-income category is also a contribution
+            else if (!isTransfer && t.type === 'Credit' && t.categoryId !== incomeCategoryId) {
+                acc[t.categoryId] = (acc[t.categoryId] || 0) + t.amount;
+            }
+            return acc;
+        }, {} as Record<string, number>);
+    }, [periodTransactions, incomeCategoryId, transferCategoryIds]);
 
     const spendingEnvelopes = useMemo(() => envelopes.filter(e => e.type === 'spending'), [envelopes]);
     const goalEnvelopes = useMemo(() => envelopes.filter(e => e.type === 'goal'), [envelopes]);
@@ -512,28 +528,55 @@ const EnvelopesSummary: React.FC<{
                              <h4 className="font-semibold text-slate-700 text-md mb-4 flex items-center gap-2"><Target size={18}/> Saving Goals</h4>
                              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                 {goalEnvelopes.map(envelope => {
-                                    const contributed = envelope.categoryIds.reduce((sum, catId) => sum + (contributionsByCategoryIdAllTime[catId] || 0), 0);
-                                    const goalTarget = envelope.budget;
-                                    const progress = goalTarget > 0 ? Math.min((contributed / goalTarget) * 100, 100) : 0;
-                                    const isComplete = contributed >= goalTarget;
+                                    const contributedAllTime = envelope.categoryIds.reduce((sum, catId) => sum + (contributionsByCategoryIdAllTime[catId] || 0), 0);
+                                    const contributedInPeriod = envelope.categoryIds.reduce((sum, catId) => sum + (contributionsByCategoryIdInPeriod[catId] || 0), 0);
+                                    
+                                    // The contribution goal, adjusted for the selected period. `envelope.budget` is the monthly goal.
+                                    const contributionGoalForPeriod = getAdjustedBudget(envelope.budget, period, dateRange);
+                                    
+                                    // Progress for the current period's contribution goal.
+                                    const periodProgress = contributionGoalForPeriod > 0 ? Math.min((contributedInPeriod / contributionGoalForPeriod) * 100, 100) : 0;
+                                    const isPeriodGoalMet = contributedInPeriod >= contributionGoalForPeriod;
+
+                                    // Overall progress if a final target is set.
+                                    const overallProgress = envelope.finalTarget && envelope.finalTarget > 0 ? Math.min((contributedAllTime / envelope.finalTarget) * 100, 100) : 0;
+                                    const isFinalGoalMet = envelope.finalTarget ? contributedAllTime >= envelope.finalTarget : false;
 
                                     return (
                                         <div key={envelope.id} className="bg-slate-50 p-4 rounded-lg">
                                             <div className="flex justify-between items-baseline mb-2">
                                                 <h4 className="font-semibold text-slate-700">{envelope.name}</h4>
-                                                 <p className={`text-sm font-bold ${isComplete ? 'text-green-600' : 'text-slate-600'}`}>
-                                                    {isComplete ? 'Goal Reached!' : `${currencyFormatter.format(Math.max(0, goalTarget - contributed))} to go`}
+                                                <p className={`text-sm font-bold ${isPeriodGoalMet ? 'text-green-600' : 'text-slate-600'}`}>
+                                                    {isPeriodGoalMet && contributionGoalForPeriod > 0
+                                                        ? `${currencyFormatter.format(contributedInPeriod)} Contributed`
+                                                        : `${currencyFormatter.format(Math.max(0, contributionGoalForPeriod - contributedInPeriod))} left this period`}
                                                 </p>
                                             </div>
                                             <div className="w-full bg-slate-200 rounded-full h-4 relative overflow-hidden">
                                                 <div 
-                                                    className={`h-full rounded-full transition-all duration-500 ${isComplete ? 'bg-green-500' : 'bg-gradient-to-r from-teal-400 to-cyan-500'}`} 
-                                                    style={{width: `${progress}%`}}
+                                                    className={`h-full rounded-full transition-all duration-500 ${isPeriodGoalMet ? 'bg-green-500' : 'bg-gradient-to-r from-teal-400 to-cyan-500'}`} 
+                                                    style={{width: `${periodProgress}%`}}
                                                 ></div>
                                             </div>
                                             <p className="text-xs text-slate-500 mt-1 text-right">
-                                                {currencyFormatter.format(contributed)} of {currencyFormatter.format(goalTarget)} ({Math.round(progress)}%)
+                                                {currencyFormatter.format(contributedInPeriod)} of {currencyFormatter.format(contributionGoalForPeriod)} ({Math.round(periodProgress)}%)
                                             </p>
+
+                                            {/* Optional secondary display for the final target goal */}
+                                            {envelope.finalTarget && envelope.finalTarget > 0 && (
+                                                <div className="mt-3">
+                                                    <div className="flex justify-between items-baseline text-xs text-slate-500 mb-1">
+                                                        <span>Overall Goal</span>
+                                                        <span className="font-semibold">{isFinalGoalMet ? 'Complete!' : `${currencyFormatter.format(contributedAllTime)} of ${currencyFormatter.format(envelope.finalTarget)}`}</span>
+                                                    </div>
+                                                    <div className="w-full bg-slate-200 rounded-full h-2 relative overflow-hidden">
+                                                        <div 
+                                                            className={`h-full rounded-full transition-all duration-500 ${isFinalGoalMet ? 'bg-green-500' : 'bg-gradient-to-r from-blue-400 to-primary'}`} 
+                                                            style={{width: `${overallProgress}%`}}
+                                                        ></div>
+                                                    </div>
+                                                </div>
+                                            )}
                                         </div>
                                     )
                                 })}

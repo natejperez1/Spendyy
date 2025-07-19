@@ -20,7 +20,8 @@ export interface Envelope {
   id: string;
   name: string;
   type: 'spending' | 'goal'; // 'spending' is a pool, 'goal' is a saving goal
-  budget: number; // For 'spending', this is monthly budget. For 'goal', this is target amount.
+  budget: number; // For 'spending', monthly budget. For 'goal', monthly contribution goal.
+  finalTarget?: number; // For 'goal', the optional final target sum.
   categoryIds: string[];
 }
 

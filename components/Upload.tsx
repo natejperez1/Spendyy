@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { Card, Modal } from './ui';
 import { Transaction } from '../types';
 import Papa, { ParseResult } from 'papaparse';
-import { UploadCloud, CheckCircle, AlertTriangle, FileUp, ArrowRight } from 'lucide-react';
+import { UploadCloud, CheckCircle, AlertTriangle, FileUp, ArrowRight, Tag, Box, LayoutDashboard, Download, ShieldCheck } from 'lucide-react';
 
 type Mapping = {
     date: string | null;
@@ -234,8 +234,55 @@ export const Upload: React.FC<{
         event.target.value = '';
     };
 
+    const flowSteps = [
+        {
+            icon: <FileUp size={24} />,
+            title: "1. Upload CSV",
+            description: "Upload a bank CSV to start."
+        },
+        {
+            icon: <Tag size={24} />,
+            title: "2. Categorize",
+            description: "Categorize transactions manually or with AI."
+        },
+        {
+            icon: <Box size={24} />,
+            title: "3. Create Envelopes",
+            description: "Group categories into spending or saving goals."
+        },
+        {
+            icon: <LayoutDashboard size={24} />,
+            title: "4. View Dashboard",
+            description: "Check your progress for any month, week, or day."
+        },
+        {
+            icon: <Download size={24} />,
+            title: "5. Backup Data",
+            description: "Export a full backup and save it somewhere safe."
+        }
+    ];
+
     return (
-        <div className="max-w-2xl mx-auto space-y-8">
+        <div className="max-w-5xl mx-auto space-y-8">
+            <Card className="p-6 bg-blue-50 border border-blue-200">
+                <div className="flex items-start gap-4">
+                    <div className="flex-shrink-0 pt-1">
+                        <ShieldCheck size={24} className="text-blue-600" />
+                    </div>
+                    <div>
+                        <h3 className="text-lg font-semibold text-blue-800">A Note on Your Privacy</h3>
+                        <p className="text-sm text-blue-700 mt-2">
+                            This is a local-first application. All data you upload is stored <strong className="font-semibold">only in your browser's local storage</strong>. No information is ever sent to or stored on a server.
+                        </p>
+                        <ul className="list-disc list-inside text-sm text-blue-700 mt-3 space-y-1">
+                            <li><strong>You are in control:</strong> Your data stays on your device. You can export a full backup or delete everything at any time from the Settings page.</li>
+                            <li><strong>Data Persistence:</strong> If you clear your browser's cache or site data, all your financial information in this app will be <strong className="font-semibold">permanently deleted</strong>.</li>
+                            <li><strong>Recommendation:</strong> Ensure you make a backup (Settings > Export Full Backup) of your data regularly and store it in a safe place.</li>
+                        </ul>
+                    </div>
+                </div>
+            </Card>
+            
             <Card className="flex flex-col items-center text-center p-8">
                 <FileUp size={48} className="mb-4 text-primary" />
                 <h3 className="text-xl font-semibold text-slate-800">Upload Transaction File</h3>
@@ -270,6 +317,33 @@ export const Upload: React.FC<{
                     onConfirm={processFile}
                 />
             )}
+
+            
+
+            <Card className="p-6">
+                <h3 className="text-xl font-semibold text-slate-800 text-center mb-8">How It Works</h3>
+                <div className="flex flex-col md:flex-row items-center md:items-start gap-y-8 md:gap-y-0 gap-x-4">
+                    {flowSteps.map((step, index) => (
+                        <React.Fragment key={step.title}>
+                            <div className="flex flex-col items-center text-center flex-1">
+                                <div className="flex items-center justify-center w-12 h-12 bg-primary/10 text-primary rounded-full mb-3">
+                                    {step.icon}
+                                </div>
+                                <h4 className="font-semibold text-slate-700 mb-1">{step.title}</h4>
+                                <p className="text-xs text-slate-500">{step.description}</p>
+                            </div>
+                            {index < flowSteps.length - 1 && (
+                                <>
+                                    <div className="w-px h-8 md:hidden bg-slate-200"></div>
+                                    <div className="hidden md:flex items-center h-12 flex-grow-0 pt-1">
+                                        <ArrowRight size={24} className="text-slate-300 mx-auto" />
+                                    </div>
+                                </>
+                            )}
+                        </React.Fragment>
+                    ))}
+                </div>
+            </Card>
         </div>
     );
 };

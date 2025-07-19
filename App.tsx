@@ -125,7 +125,7 @@ export default function App() {
                     <button
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id)}
-                        className={`flex flex-col items-center justify-center gap-1 p-2 flex-grow text-xs font-medium transition-colors ${
+                        className={`flex flex-col items-center justify-center gap-1 p-2 flex-grow text-xs font-medium transition-colors relative ${
                             activeTab === tab.id ? 'text-primary' : 'text-slate-500'
                         }`}
                         style={{flexBasis: '20%'}}
@@ -134,7 +134,7 @@ export default function App() {
                         <span>{tab.label}</span>
                          {activeTab === tab.id && (
                             <motion.div
-                                className="absolute bottom-0 h-0.5 bg-primary w-1/2"
+                                className="absolute bottom-0 h-0.5 bg-primary w-full"
                                 layoutId="mobile-underline"
                                  transition={{ type: 'spring', stiffness: 300, damping: 25 }}
                             />
