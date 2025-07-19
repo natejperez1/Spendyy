@@ -21,6 +21,7 @@ export interface Envelope {
   name: string;
   type: 'spending' | 'goal'; // 'spending' is a pool, 'goal' is a saving goal
   budget: number; // For 'spending', monthly budget. For 'goal', monthly contribution goal.
+  startingAmount?: number; // For 'goal', an initial amount already saved.
   finalTarget?: number; // For 'goal', the optional final target sum.
   categoryIds: string[];
 }
@@ -33,4 +34,13 @@ export interface AISettings {
   enabled: boolean;
   provider: 'gemini'; // Future: 'deepseek' | 'openai' etc.
   apiKey: string;
+}
+
+export interface WidgetVisibility {
+  stats: boolean;
+  envelopes: boolean;
+  spendingPie: boolean;
+  incomeBreakdown: boolean;
+  trends: boolean;
+  weekdayWeekendSpend: boolean;
 }

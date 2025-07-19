@@ -145,6 +145,7 @@ const EnvelopeManager: React.FC<{
                                         ? `Budget: ${currencyFormatter.format(e.budget)}/mo` 
                                         : `Contribution: ${currencyFormatter.format(e.budget)}/mo`
                                     }
+                                    {e.type === 'goal' && e.startingAmount ? ` | Start: ${currencyFormatter.format(e.startingAmount)}` : ''}
                                     {e.type === 'goal' && e.finalTarget ? ` | Goal: ${currencyFormatter.format(e.finalTarget)}` : ''}
                                 </p>
                            </div>
@@ -186,6 +187,7 @@ const EnvelopeModal: React.FC<{
     const [type, setType] = useState<Envelope['type']>('spending');
     const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
     const [finalTarget, setFinalTarget] = useState<number | ''>('');
+    const [startingAmount, setStartingAmount] = useState<number | ''>('');
 
 
     React.useEffect(() => {
@@ -195,6 +197,7 @@ const EnvelopeModal: React.FC<{
             setSelectedCategories(envelope?.categoryIds || []);
             setType(envelope?.type || 'spending');
             setFinalTarget(envelope?.finalTarget || '');
+            setStartingAmount(envelope?.startingAmount || '');
         }
     }, [isOpen, envelope])
 
@@ -211,7 +214,8 @@ const EnvelopeModal: React.FC<{
             budget, 
             categoryIds: selectedCategories, 
             type,
-            finalTarget: Number(finalTarget) > 0 ? Number(finalTarget) : undefined
+            finalTarget: Number(finalTarget) > 0 ? Number(finalTarget) : undefined,
+            startingAmount: Number(startingAmount) > 0 ? Number(startingAmount) : undefined
         };
         if (envelope) {
             updateEnvelope({ ...envelope, ...envelopeData });
@@ -260,11 +264,18 @@ const EnvelopeModal: React.FC<{
                 </div>
                 
                 {type === 'goal' && (
-                     <div>
-                        <label htmlFor="envelopeFinalTarget" className="block text-sm font-medium text-slate-700 mb-1">Final Target Sum (Optional)</label>
-                        <input id="envelopeFinalTarget" type="number" value={finalTarget} onChange={e => setFinalTarget(e.target.value === '' ? '' : parseFloat(e.target.value) || 0)} min="0" step="0.01" className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition" />
-                        <p className="text-xs text-slate-500 mt-2">Set a total amount you want to save for this goal. Leave at 0 or empty if there's no final target.</p>
-                    </div>
+                    <>
+                        <div>
+                            <label htmlFor="envelopeStartingAmount" className="block text-sm font-medium text-slate-700 mb-1">Starting Amount (Optional)</label>
+                            <input id="envelopeStartingAmount" type="number" value={startingAmount} onChange={e => setStartingAmount(e.target.value === '' ? '' : parseFloat(e.target.value) || 0)} min="0" step="0.01" className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition" />
+                            <p className="text-xs text-slate-500 mt-2">Enter any funds you already have for this goal. This amount will be added to your overall progress.</p>
+                        </div>
+                         <div>
+                            <label htmlFor="envelopeFinalTarget" className="block text-sm font-medium text-slate-700 mb-1">Final Target Sum (Optional)</label>
+                            <input id="envelopeFinalTarget" type="number" value={finalTarget} onChange={e => setFinalTarget(e.target.value === '' ? '' : parseFloat(e.target.value) || 0)} min="0" step="0.01" className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition" />
+                            <p className="text-xs text-slate-500 mt-2">Set a total amount you want to save for this goal. Leave at 0 or empty if there's no final target.</p>
+                        </div>
+                    </>
                 )}
 
                 <div>

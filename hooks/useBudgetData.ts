@@ -1,5 +1,6 @@
+
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { Transaction, Category, Envelope, AISettings } from '../types';
+import { Transaction, Category, Envelope, AISettings, WidgetVisibility } from '../types';
 import { DEFAULT_CATEGORIES, CATEGORY_COLORS } from '../constants';
 
 function useLocalStorage<T,>(key: string, initialValue: T) {
@@ -32,11 +33,21 @@ const defaultAISettings: AISettings = {
     apiKey: process.env.API_KEY || '',
 };
 
+const defaultWidgetVisibility: WidgetVisibility = {
+    stats: true,
+    envelopes: true,
+    spendingPie: true,
+    incomeBreakdown: true,
+    trends: true,
+    weekdayWeekendSpend: true,
+};
+
 export const useBudgetData = () => {
   const [transactions, setTransactions] = useLocalStorage<Transaction[]>('transactions', []);
   const [categories, setCategories] = useLocalStorage<Category[]>('categories', DEFAULT_CATEGORIES);
   const [envelopes, setEnvelopes] = useLocalStorage<Envelope[]>('envelopes', []);
   const [aiSettings, setAiSettings] = useLocalStorage<AISettings>('aiSettings', defaultAISettings);
+  const [widgetVisibility, setWidgetVisibility] = useLocalStorage<WidgetVisibility>('dashboardWidgetVisibility', defaultWidgetVisibility);
 
   // One-time effect to migrate legacy envelope data.
   useEffect(() => {
@@ -51,6 +62,17 @@ export const useBudgetData = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Run only once on mount.
+
+  const sortedCategories = useMemo(() => {
+    return [...categories].sort((a, b) => {
+        // Always keep 'Uncategorized' at the bottom
+        if (a.id === 'uncategorized') return 1;
+        if (b.id === 'uncategorized') return -1;
+        
+        // Alphabetical sort for all other categories
+        return a.name.localeCompare(b.name, undefined, { sensitivity: 'base' });
+    });
+  }, [categories]);
 
   const addTransaction = (transaction: Omit<Transaction, 'id'>) => {
     setTransactions(prev => [...prev, { ...transaction, id: `trans-${Date.now()}` }]);
@@ -144,6 +166,8 @@ export const useBudgetData = () => {
     setTransactions([]);
     setCategories(DEFAULT_CATEGORIES);
     setEnvelopes([]);
+    setAiSettings(defaultAISettings);
+    setWidgetVisibility(defaultWidgetVisibility);
   };
 
   const importAllData = (data: any): { success: boolean, message: string } => {
@@ -159,6 +183,13 @@ export const useBudgetData = () => {
         setCategories(data.categories);
         setEnvelopes(data.envelopes);
         setAiSettings(data.aiSettings);
+        if (data.widgetVisibility) { // For backwards compatibility with older backups
+          // Merge with defaults to ensure new widgets are visible
+          const importedVisibility = { ...defaultWidgetVisibility, ...data.widgetVisibility };
+          setWidgetVisibility(importedVisibility);
+        } else {
+          setWidgetVisibility(defaultWidgetVisibility);
+        }
 
         return { success: true, message: "Data imported successfully! The application will now reload." };
     } catch (error) {
@@ -173,9 +204,10 @@ export const useBudgetData = () => {
 
   return {
     transactions,
-    categories,
+    categories: sortedCategories,
     envelopes,
     aiSettings,
+    widgetVisibility,
     addTransaction,
     addTransactions,
     updateTransaction,
@@ -191,5 +223,6 @@ export const useBudgetData = () => {
     importAllData,
     getCategoryById,
     updateAiSettings: setAiSettings,
+    updateWidgetVisibility: setWidgetVisibility
   };
 };

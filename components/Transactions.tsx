@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { Transaction, Category, AISettings } from '../types';
 import { Card, Modal, CategoryModal } from './ui';
-import { ChevronDown, Edit, Trash2, WandSparkles, LoaderCircle, Tag, PlusCircle, Info } from 'lucide-react';
+import { ChevronDown, Edit, Trash2, WandSparkles, LoaderCircle, Tag, PlusCircle, Info, X } from 'lucide-react';
 import { suggestCategoriesForTransaction, suggestCategoriesForTransactionsBatch } from '../services/geminiService';
 
 const useClickOutside = (ref: React.RefObject<HTMLElement>, handler: () => void) => {
@@ -297,13 +297,24 @@ export const Transactions: React.FC<{
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
                         <h2 className="text-xl font-bold text-slate-800">All Transactions</h2>
                         <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto items-center">
-                            <input
-                                type="text"
-                                placeholder="Search..."
-                                value={filter.search}
-                                onChange={(e) => setFilter(prev => ({ ...prev, search: e.target.value }))}
-                                className="w-full md:w-48 px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition"
-                            />
+                            <div className="relative w-full md:w-48">
+                                <input
+                                    type="text"
+                                    placeholder="Search..."
+                                    value={filter.search}
+                                    onChange={(e) => setFilter(prev => ({ ...prev, search: e.target.value }))}
+                                    className="w-full pl-3 pr-10 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition"
+                                />
+                                {filter.search && (
+                                    <button
+                                      onClick={() => setFilter(prev => ({ ...prev, search: '' }))}
+                                      className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-600 transition-colors"
+                                      aria-label="Clear search"
+                                    >
+                                      <X size={18} />
+                                    </button>
+                                )}
+                            </div>
                             <select
                                 value={filter.categoryId}
                                 onChange={(e) => setFilter(prev => ({ ...prev, categoryId: e.target.value }))}

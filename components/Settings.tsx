@@ -1,6 +1,6 @@
-import React, { useState, useMemo, useEffect, useRef } from 'react';
+import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { Card, Modal } from './ui';
-import { AlertTriangle, Trash2, BotMessageSquare, CheckCircle, XCircle, LoaderCircle, Download, Upload as UploadIcon, FileJson } from 'lucide-react';
+import { AlertTriangle, Trash2, BotMessageSquare, CheckCircle, XCircle, LoaderCircle, Download, Upload as UploadIcon, FileJson, RefreshCw } from 'lucide-react';
 import { AISettings, Transaction, Category, Envelope } from '../types';
 import { testAIApiKey } from '../services/geminiService';
 import Papa from 'papaparse';
@@ -18,7 +18,16 @@ const DataPrivacyManager: React.FC<{
     const [isRawDataModalOpen, setRawDataModalOpen] = useState(false);
     const [isResetConfirmModalOpen, setResetConfirmModalOpen] = useState(false);
 
-    useEffect(() => {
+    const formatBytes = (bytes: number, decimals = 2) => {
+        if (!+bytes) return '0 Bytes';
+        const k = 1024;
+        const dm = decimals < 0 ? 0 : decimals;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
+    };
+
+    const calculateStorageSize = useCallback(() => {
         const keys = ['transactions', 'categories', 'envelopes', 'aiSettings'];
         let totalBytes = 0;
         keys.forEach(key => {
@@ -32,16 +41,11 @@ const DataPrivacyManager: React.FC<{
             }
         });
         setStorageSize(totalBytes);
-    }, [allData]);
+    }, []);
 
-    const formatBytes = (bytes: number, decimals = 2) => {
-        if (!+bytes) return '0 Bytes';
-        const k = 1024;
-        const dm = decimals < 0 ? 0 : decimals;
-        const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
-        const i = Math.floor(Math.log(bytes) / Math.log(k));
-        return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
-    };
+    useEffect(() => {
+        calculateStorageSize();
+    }, [allData, calculateStorageSize]);
 
     const handleReset = () => {
         resetAllData();
@@ -61,7 +65,12 @@ const DataPrivacyManager: React.FC<{
                             <p className="font-medium text-slate-700">Local Data Usage</p>
                             <p className="text-xs text-slate-500">The total size of your data stored in this browser.</p>
                         </div>
-                        <span className="font-mono text-sm font-semibold text-primary">{formatBytes(storageSize)}</span>
+                        <div className="flex items-center gap-2">
+                            <span className="font-mono text-sm font-semibold text-primary">{formatBytes(storageSize)}</span>
+                            <button onClick={calculateStorageSize} className="p-1.5 text-slate-500 hover:text-primary hover:bg-slate-200 rounded-full transition-colors" title="Refresh size">
+                                <RefreshCw size={14} />
+                            </button>
+                        </div>
                     </div>
                     <div className="bg-slate-50 border border-slate-200 p-4 rounded-lg flex flex-col sm:flex-row items-center justify-between gap-3">
                          <div>

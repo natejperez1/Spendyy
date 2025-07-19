@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Tab } from './types';
+import { Tab, WidgetVisibility } from './types';
 import { useBudgetData } from './hooks/useBudgetData';
 import { Dashboard } from './components/Dashboard';
 import { Transactions } from './components/Transactions';
@@ -17,7 +17,7 @@ const TABS: { id: Tab; label: string; icon: React.ReactNode }[] = [
     { id: 'settings', label: 'Settings', icon: <SettingsIcon size={18} /> },
 ];
 
-// A coin logo with a dollar sign, adapting the user-provided SVG to the app's theme.
+// Spendyy Logo.
 const Logo: React.FC<{ className?: string }> = ({ className }) => (
   <svg
     viewBox="0 0 24 24"
@@ -48,7 +48,13 @@ export default function App() {
     const renderContent = () => {
         switch (activeTab) {
             case 'dashboard':
-                return <Dashboard transactions={budgetData.transactions} categories={budgetData.categories} envelopes={budgetData.envelopes} />;
+                return <Dashboard 
+                    transactions={budgetData.transactions} 
+                    categories={budgetData.categories} 
+                    envelopes={budgetData.envelopes}
+                    widgetVisibility={budgetData.widgetVisibility}
+                    updateWidgetVisibility={budgetData.updateWidgetVisibility}
+                />;
             case 'transactions':
                 return <Transactions 
                     transactions={budgetData.transactions}
