@@ -1,9 +1,11 @@
 import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { Card, Modal } from './ui';
-import { AlertTriangle, Trash2, BotMessageSquare, CheckCircle, XCircle, LoaderCircle, Download, Upload as UploadIcon, FileJson, RefreshCw } from 'lucide-react';
+import { AlertTriangle, Trash2, BotMessageSquare, CheckCircle, XCircle, LoaderCircle, Download, Upload as UploadIcon, FileJson, RefreshCw, BookText } from 'lucide-react';
 import { AISettings, Transaction, Category, Envelope } from '../types';
 import { testAIApiKey } from '../services/geminiService';
 import Papa from 'papaparse';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 const DataPrivacyManager: React.FC<{
     allData: {
@@ -28,7 +30,7 @@ const DataPrivacyManager: React.FC<{
     };
 
     const calculateStorageSize = useCallback(() => {
-        const keys = ['transactions', 'categories', 'envelopes', 'aiSettings'];
+        const keys = ['transactions', 'categories', 'envelopes', 'aiSettings', 'dashboardWidgetVisibility'];
         let totalBytes = 0;
         keys.forEach(key => {
             try {
@@ -471,6 +473,65 @@ const BackupAndRestoreManager: React.FC<{
     );
 };
 
+const ChangelogModal: React.FC<{
+    isOpen: boolean;
+    onClose: () => void;
+    content: string;
+}> = ({ isOpen, onClose, content }) => {
+    return (
+        <Modal isOpen={isOpen} onClose={onClose} title="Changelog" size="3xl">
+            <div className="prose prose-slate max-w-none max-h-[70vh] overflow-y-auto pr-4">
+                <ReactMarkdown
+                    remarkPlugins={[remarkGfm]}
+                    components={{
+                        h1: ({node, ...props}) => <h1 className="text-2xl font-bold mb-4 text-slate-900" {...props} />,
+                        h2: ({node, ...props}) => <h2 className="text-xl font-bold mt-6 mb-3 text-slate-800 border-b pb-2" {...props} />,
+                        h3: ({node, ...props}) => <h3 className="text-lg font-semibold mt-4 mb-2 text-slate-700" {...props} />,
+                        ul: ({node, ...props}) => <ul className="list-disc pl-6 space-y-1" {...props} />,
+                        li: ({node, ...props}) => <li className="text-slate-600" {...props} />,
+                        a: ({node, ...props}) => <a className="text-primary hover:underline" target="_blank" rel="noopener noreferrer" {...props} />,
+                        p: ({node, ...props}) => <p className="text-slate-600 mb-2" {...props} />,
+                        code: ({node, ...props}) => <code className="bg-slate-100 text-slate-800 rounded px-1 py-0.5 text-sm font-mono" {...props} />,
+                    }}
+                >
+                    {content}
+                </ReactMarkdown>
+            </div>
+            <div className="flex justify-end mt-6">
+                <button onClick={onClose} className="px-4 py-2 text-sm font-semibold text-white bg-primary rounded-lg hover:bg-primary-dark">Close</button>
+            </div>
+        </Modal>
+    );
+};
+
+const VisitCounter = () => {
+    const [count, setCount] = useState<number | null>(null);
+
+    useEffect(() => {
+        const fetchVisits = async () => {
+            try {
+                // Using a unique namespace for this app to avoid collisions
+                const response = await fetch('https://api.counterapi.dev/v1/spendyy-app/visits/up');
+                if (!response.ok) throw new Error('Failed to fetch visit count');
+                const data = await response.json();
+                setCount(data.count);
+            } catch (error) {
+                console.error("Could not fetch visit count:", error);
+                setCount(0); // Show 0 or some error state
+            }
+        };
+        
+        fetchVisits();
+    }, []);
+
+    if (count === null) {
+        return <LoaderCircle size={16} className="text-slate-400 animate-spin" />;
+    }
+
+    return <span className="font-mono text-sm font-semibold text-primary">{count.toLocaleString()}</span>;
+};
+
+
 export const Settings: React.FC<{ 
     resetAllData: () => void;
     aiSettings: AISettings;
@@ -482,6 +543,21 @@ export const Settings: React.FC<{
 }> = ({ resetAllData, aiSettings, updateAiSettings, transactions, categories, envelopes, importAllData }) => {
     
     const allData = { transactions, categories, envelopes, aiSettings };
+    const [isChangelogModalOpen, setChangelogModalOpen] = useState(false);
+    const [changelogContent, setChangelogContent] = useState('');
+
+    useEffect(() => {
+        fetch('/changelog.md')
+            .then(response => {
+                if (!response.ok) throw new Error('Changelog file not found.');
+                return response.text();
+            })
+            .then(text => setChangelogContent(text))
+            .catch(error => {
+                console.error("Error fetching changelog:", error);
+                setChangelogContent("Could not load changelog.");
+            });
+    }, []);
 
     return (
         <div className="max-w-2xl mx-auto space-y-6">
@@ -493,6 +569,37 @@ export const Settings: React.FC<{
             <ExportDataManager transactions={transactions} categories={categories} />
 
             <AISettingsManager settings={aiSettings} updateSettings={updateAiSettings} />
+
+            <Card className="mt-6 p-6">
+                <h2 className="text-xl font-bold text-slate-800 mb-2">About Spendyy</h2>
+                <p className="text-sm text-slate-500 mb-6">
+                    View project history, release notes, and usage stats.
+                </p>
+                <div className="space-y-3">
+                    <div className="bg-slate-50 border border-slate-200 p-4 rounded-lg flex items-center justify-between gap-3">
+                        <div>
+                            <p className="font-medium text-slate-700">Application Changelog</p>
+                            <p className="text-xs text-slate-500">See what's new in the latest version.</p>
+                        </div>
+                        <button onClick={() => setChangelogModalOpen(true)} className="w-full sm:w-auto px-4 py-2 text-sm font-semibold text-white bg-primary rounded-lg hover:bg-primary-dark transition-colors flex items-center justify-center gap-2">
+                            <BookText size={16} /> View Changelog
+                        </button>
+                    </div>
+                     <div className="bg-slate-50 border border-slate-200 p-4 rounded-lg flex items-center justify-between gap-3">
+                        <div>
+                            <p className="font-medium text-slate-700">Application Visits</p>
+                            <p className="text-xs text-slate-500">Total times the app has been opened.</p>
+                        </div>
+                        <VisitCounter />
+                    </div>
+                </div>
+            </Card>
+
+            <ChangelogModal
+                isOpen={isChangelogModalOpen}
+                onClose={() => setChangelogModalOpen(false)}
+                content={changelogContent}
+            />
 
         </div>
     );

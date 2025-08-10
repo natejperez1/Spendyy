@@ -40,7 +40,11 @@ To make categorizing transactions effortless, Spendyy includes an optional AI-as
     *   **Batch AI Assist:** Let the AI categorize all your uncategorized transactions in one go.
     *   Powered by Google's `gemini-2.5-flash` for fast and accurate results.
 *   **🧾 Robust Transaction Management:**
-    *   Manually add, edit, and delete transactions.
+    *   **Advanced Data Grid:** A powerful, sortable, and filterable transaction table powered by TanStack Table.
+    *   **Monthly Pagination:** Easily navigate through your history month by month or jump directly to a specific date.
+    *   **Bulk Actions:** Select multiple transactions to delete them all at once.
+    *   **Customizable View:** Resize, reorder, and hide columns to create your perfect layout.
+    *   Manually add, edit, and delete individual transactions.
     *   Easily split transaction amounts (e.g., when you've paid for a shared meal).
 *   **⬆️ Flexible Data Import:**
     *   Upload CSV files from your bank.
@@ -61,6 +65,7 @@ To make categorizing transactions effortless, Spendyy includes an optional AI-as
 ## 🛠️ Technology Stack
 
 *   **Frontend:** React & TypeScript
+*   **Data Tables:** TanStack Table
 *   **AI Integration:** Google Gemini API (`@google/genai`)
 *   **Styling:** Tailwind CSS
 *   **Animations:** Framer Motion
@@ -83,19 +88,32 @@ A live version of the application is available for demonstration at:
 *   [Node.js](https://nodejs.org/) (which includes npm) version 18.x or higher.
 *   (Optional) A Google Gemini API Key if you wish to use the AI features. You can get one from [Google AI Studio](https://aistudio.google.com/app/apikey).
 
-### Configuration
 
-The application uses environment variables to handle the Gemini API key. For local development, you need to create a `.env` file in the root of the project.
+### Configuration (API Key)
 
-1.  Clone the repository.
-2.  In the root directory of the project, create a new file named `.env`.
-3.  Add your API key to the `.env` file like this:
+The AI features require a Google Gemini API key. There are two ways to provide it:
 
-    ```
+**1. Through the User Interface (Recommended for most users)**
+
+The easiest way to use the AI features is to add your API key directly within the application:
+
+1.  Go to the **Settings** tab.
+2.  In the **AI Settings** section, paste your API key into the input field.
+3.  Click **"Test & Save Settings"**.
+
+The key is stored securely in your browser's `localStorage` and will be used for all future sessions on that device. This is the recommended method when using the live demo or a pre-built version of the app.
+
+**2. Using an Environment File (For developers and self-hosting)**
+
+If you are running the project from the source code or hosting your own version, you can set a *default* API key that will be bundled with the application. This is useful for private deployments where you want the key to be pre-configured for all users of your instance.
+
+1.  In the project's root directory, create a file named `.env`.
+2.  Add your API key to this file:
+    ```env
     API_KEY="YOUR_GEMINI_API_KEY_HERE"
     ```
+This key will be the default for anyone using your build. Users can still override it by entering their own key in the Settings page UI. The `.env` file is listed in `.gitignore` to prevent accidentally committing your secret key to version control.
 
-    The application is configured to read this key. The `.env` file is included in `.gitignore` to prevent you from accidentally committing your secret key.
 
 ### Running Locally
 
@@ -119,3 +137,14 @@ To create an optimized static build of the application:
     npm run build
     ```
 2.  The output files will be generated in the `dist` directory. You can deploy this directory to any static web hosting service.
+---
+
+## 🤝 Contributing
+
+If you have suggestions for improvements or find a bug, please feel free to open an issue or submit a pull request.
+
+---
+
+## 📜 License
+
+This project is open-source and available under the MIT License.

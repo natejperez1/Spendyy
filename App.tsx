@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Tab, WidgetVisibility } from './types';
 import { useBudgetData } from './hooks/useBudgetData';
@@ -61,6 +62,7 @@ export default function App() {
                     categories={budgetData.categories}
                     getCategoryById={budgetData.getCategoryById}
                     deleteTransaction={budgetData.deleteTransaction}
+                    deleteTransactions={budgetData.deleteTransactions}
                     updateTransaction={budgetData.updateTransaction}
                     updateTransactions={budgetData.updateTransactions}
                     addCategory={budgetData.addCategory}

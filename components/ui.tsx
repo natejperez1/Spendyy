@@ -9,9 +9,19 @@ interface ModalProps {
   onClose: () => void;
   title: string;
   children: ReactNode;
+  size?: 'md' | 'lg' | 'xl' | '2xl' | '3xl';
 }
 
-export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }) => {
+export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, size = 'md' }) => {
+  const sizeClasses = {
+    md: 'max-w-md',
+    lg: 'max-w-lg',
+    xl: 'max-w-xl',
+    '2xl': 'max-w-2xl',
+    '3xl': 'max-w-3xl',
+  };
+  const modalWidthClass = sizeClasses[size] || sizeClasses['md'];
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -27,7 +37,7 @@ export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.9, opacity: 0, y: 30 }}
             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-            className="bg-white rounded-xl shadow-2xl w-full max-w-md m-4"
+            className={`bg-white rounded-xl shadow-2xl w-full ${modalWidthClass} m-4`}
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between p-6 border-b border-slate-200">

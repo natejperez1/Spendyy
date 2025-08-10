@@ -131,6 +131,11 @@ export const useBudgetData = () => {
     setTransactions(prev => prev.filter(t => t.id !== id));
   };
 
+  const deleteTransactions = (ids: string[]) => {
+    const idsToDelete = new Set(ids);
+    setTransactions(prev => prev.filter(t => !idsToDelete.has(t.id)));
+  };
+
   const addCategory = (category: Omit<Category, 'id'>) => {
     setCategories(prev => [...prev, { ...category, id: `cat-${Date.now()}` }]);
   };
@@ -213,6 +218,7 @@ export const useBudgetData = () => {
     updateTransaction,
     updateTransactions,
     deleteTransaction,
+    deleteTransactions,
     addCategory,
     updateCategory,
     deleteCategory,
