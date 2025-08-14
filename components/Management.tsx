@@ -1,9 +1,9 @@
+
 import React, { useState } from 'react';
 import { Category, Envelope } from '../types';
 import { Card, CategoryModal, Modal } from './ui';
 import { Edit, Trash2, PlusCircle, Info, Box, Target, ArrowRightLeft } from 'lucide-react';
-
-const currencyFormatter = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' });
+import { currencyFormatter } from '../utils';
 
 export const Management: React.FC<{
     categories: Category[];
@@ -75,9 +75,9 @@ const CategoryManager: React.FC<{
     onNew: () => void,
 }> = ({ categories, deleteCategory, onEdit, onNew }) => (
     <Card className="p-6">
-        <div className="flex justify-between items-center mb-4">
+        <div className="flex flex-col sm:flex-row gap-4 sm:justify-between sm:items-center mb-4">
             <h3 className="text-xl font-bold text-slate-800">Categories</h3>
-            <button onClick={onNew} className="flex items-center gap-2 px-3 py-2 text-sm font-semibold text-white bg-primary rounded-lg hover:bg-primary-dark transition-colors">
+            <button onClick={onNew} className="w-full sm:w-auto flex items-center justify-center gap-2 px-3 py-2 text-sm font-semibold text-white bg-primary rounded-lg hover:bg-primary-dark transition-colors">
                 <PlusCircle size={16} /> New Category
             </button>
         </div>
@@ -124,9 +124,9 @@ const EnvelopeManager: React.FC<{
     onNew: () => void,
 }> = ({ envelopes, categories, deleteEnvelope, onEdit, onNew }) => (
      <Card className="p-6">
-        <div className="flex justify-between items-center mb-4">
+        <div className="flex flex-col sm:flex-row gap-4 sm:justify-between sm:items-center mb-4">
             <h3 className="text-xl font-bold text-slate-800">Envelopes</h3>
-             <button onClick={onNew} className="flex items-center gap-2 px-3 py-2 text-sm font-semibold text-white bg-primary rounded-lg hover:bg-primary-dark transition-colors">
+             <button onClick={onNew} className="w-full sm:w-auto flex items-center justify-center gap-2 px-3 py-2 text-sm font-semibold text-white bg-primary rounded-lg hover:bg-primary-dark transition-colors">
                 <PlusCircle size={16} /> New Envelope
             </button>
         </div>
@@ -226,80 +226,83 @@ const EnvelopeModal: React.FC<{
     };
 
     return (
-        <Modal isOpen={isOpen} onClose={onClose} title={envelope ? "Edit Envelope" : "Add Envelope"}>
-            <form onSubmit={handleSubmit} className="space-y-6">
-                <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">Envelope Type</label>
-                    <div className="flex rounded-lg border border-slate-300 p-1 bg-slate-100">
-                        <button
-                            type="button"
-                            onClick={() => setType('spending')}
-                            className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors ${
-                                type === 'spending' ? 'bg-white text-primary shadow' : 'text-slate-600 hover:bg-slate-200'
-                            }`}
-                        >
-                            <Box size={16} /> Spending Pool
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => setType('goal')}
-                            className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors ${
-                                type === 'goal' ? 'bg-white text-primary shadow' : 'text-slate-600 hover:bg-slate-200'
-                            }`}
-                        >
-                           <Target size={16} /> Saving Goal
-                        </button>
+        <Modal isOpen={isOpen} onClose={onClose} title={envelope ? "Edit Envelope" : "Add Envelope"} size="lg">
+            <form onSubmit={handleSubmit}>
+                <div className="space-y-6 max-h-[65vh] overflow-y-auto pr-3">
+                    <div>
+                        <label className="block text-sm font-medium text-slate-700 mb-2">Envelope Type</label>
+                        <div className="flex rounded-lg border border-slate-300 p-1 bg-slate-100">
+                            <button
+                                type="button"
+                                onClick={() => setType('spending')}
+                                className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+                                    type === 'spending' ? 'bg-white text-primary shadow' : 'text-slate-600 hover:bg-slate-200'
+                                }`}
+                            >
+                                <Box size={16} /> Spending Pool
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setType('goal')}
+                                className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+                                    type === 'goal' ? 'bg-white text-primary shadow' : 'text-slate-600 hover:bg-slate-200'
+                                }`}
+                            >
+                               <Target size={16} /> Saving Goal
+                            </button>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label htmlFor="envelopeName" className="block text-sm font-medium text-slate-700 mb-1">Envelope Name</label>
+                        <input id="envelopeName" type="text" value={name} onChange={e => setName(e.target.value)} required className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition" />
+                    </div>
+                    <div>
+                        <label htmlFor="envelopeBudget" className="block text-sm font-medium text-slate-700 mb-1">
+                            {type === 'spending' ? 'Monthly Budget' : 'Monthly Contribution Goal'}
+                        </label>
+                        <input id="envelopeBudget" type="number" value={budget} onChange={e => setBudget(parseFloat(e.target.value) || 0)} required min="0" step="0.01" className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition" />
+                    </div>
+                    
+                    {type === 'goal' && (
+                        <>
+                            <div>
+                                <label htmlFor="envelopeStartingAmount" className="block text-sm font-medium text-slate-700 mb-1">Starting Amount (Optional)</label>
+                                <input id="envelopeStartingAmount" type="number" value={startingAmount} onChange={e => setStartingAmount(e.target.value === '' ? '' : parseFloat(e.target.value) || 0)} min="0" step="0.01" className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition" />
+                                <p className="text-xs text-slate-500 mt-2">Enter any funds you already have for this goal. This amount will be added to your overall progress.</p>
+                            </div>
+                             <div>
+                                <label htmlFor="envelopeFinalTarget" className="block text-sm font-medium text-slate-700 mb-1">Final Target Sum (Optional)</label>
+                                <input id="envelopeFinalTarget" type="number" value={finalTarget} onChange={e => setFinalTarget(e.target.value === '' ? '' : parseFloat(e.target.value) || 0)} min="0" step="0.01" className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition" />
+                                <p className="text-xs text-slate-500 mt-2">Set a total amount you want to save for this goal. Leave at 0 or empty if there's no final target.</p>
+                            </div>
+                        </>
+                    )}
+
+                    <div>
+                        <label className="block text-sm font-medium text-slate-700 mb-2">Assign Categories</label>
+                        <div className="max-h-40 overflow-y-auto space-y-2 p-3 bg-slate-50 rounded-lg border border-slate-200">
+                            {categories.filter(c => c.id !== 'uncategorized' && c.name !== 'Income').map(cat => (
+                                <label key={cat.id} className="flex items-center gap-3 p-2 rounded-md hover:bg-slate-100 cursor-pointer">
+                                    <input type="checkbox" checked={selectedCategories.includes(cat.id)} onChange={() => handleCategoryToggle(cat.id)} className="w-4 h-4 rounded text-primary focus:ring-primary border-slate-300" />
+                                    <span className="flex items-center gap-2 text-sm text-slate-700">
+                                        <span className="w-3 h-3 rounded-full" style={{backgroundColor: cat.color}}></span>
+                                        {cat.name}
+                                        {cat.isTransfer && <ArrowRightLeft size={12} className="text-slate-400" />}
+                                    </span>
+                                </label>
+                            ))}
+                        </div>
+                         <p className="text-xs text-slate-500 mt-2">
+                            {type === 'spending' 
+                             ? "Spending in these categories will count against this envelope's budget."
+                             : 'Contributions in these categories will count toward this savings goal.'
+                            }
+                        </p>
                     </div>
                 </div>
 
-                <div>
-                    <label htmlFor="envelopeName" className="block text-sm font-medium text-slate-700 mb-1">Envelope Name</label>
-                    <input id="envelopeName" type="text" value={name} onChange={e => setName(e.target.value)} required className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition" />
-                </div>
-                <div>
-                    <label htmlFor="envelopeBudget" className="block text-sm font-medium text-slate-700 mb-1">
-                        {type === 'spending' ? 'Monthly Budget' : 'Monthly Contribution Goal'}
-                    </label>
-                    <input id="envelopeBudget" type="number" value={budget} onChange={e => setBudget(parseFloat(e.target.value) || 0)} required min="0" step="0.01" className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition" />
-                </div>
-                
-                {type === 'goal' && (
-                    <>
-                        <div>
-                            <label htmlFor="envelopeStartingAmount" className="block text-sm font-medium text-slate-700 mb-1">Starting Amount (Optional)</label>
-                            <input id="envelopeStartingAmount" type="number" value={startingAmount} onChange={e => setStartingAmount(e.target.value === '' ? '' : parseFloat(e.target.value) || 0)} min="0" step="0.01" className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition" />
-                            <p className="text-xs text-slate-500 mt-2">Enter any funds you already have for this goal. This amount will be added to your overall progress.</p>
-                        </div>
-                         <div>
-                            <label htmlFor="envelopeFinalTarget" className="block text-sm font-medium text-slate-700 mb-1">Final Target Sum (Optional)</label>
-                            <input id="envelopeFinalTarget" type="number" value={finalTarget} onChange={e => setFinalTarget(e.target.value === '' ? '' : parseFloat(e.target.value) || 0)} min="0" step="0.01" className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition" />
-                            <p className="text-xs text-slate-500 mt-2">Set a total amount you want to save for this goal. Leave at 0 or empty if there's no final target.</p>
-                        </div>
-                    </>
-                )}
-
-                <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">Assign Categories</label>
-                    <div className="max-h-40 overflow-y-auto space-y-2 p-3 bg-slate-50 rounded-lg border border-slate-200">
-                        {categories.filter(c => c.id !== 'uncategorized' && c.name !== 'Income').map(cat => (
-                            <label key={cat.id} className="flex items-center gap-3 p-2 rounded-md hover:bg-slate-100 cursor-pointer">
-                                <input type="checkbox" checked={selectedCategories.includes(cat.id)} onChange={() => handleCategoryToggle(cat.id)} className="w-4 h-4 rounded text-primary focus:ring-primary border-slate-300" />
-                                <span className="flex items-center gap-2 text-sm text-slate-700">
-                                    <span className="w-3 h-3 rounded-full" style={{backgroundColor: cat.color}}></span>
-                                    {cat.name}
-                                    {cat.isTransfer && <ArrowRightLeft size={12} className="text-slate-400" />}
-                                </span>
-                            </label>
-                        ))}
-                    </div>
-                     <p className="text-xs text-slate-500 mt-2">
-                        {type === 'spending' 
-                         ? 'Spending in these categories will count against this envelope\'s budget.'
-                         : 'Contributions in these categories will count toward this savings goal.'
-                        }
-                    </p>
-                </div>
-                 <div className="flex justify-end gap-3 pt-4">
+                <div className="flex justify-end gap-3 pt-6 border-t border-slate-200 mt-6">
                     <button type="button" onClick={onClose} className="px-4 py-2 text-sm font-semibold text-slate-700 bg-slate-100 rounded-lg hover:bg-slate-200">Cancel</button>
                     <button type="submit" className="px-4 py-2 text-sm font-semibold text-white bg-primary rounded-lg hover:bg-primary-dark">Save</button>
                 </div>

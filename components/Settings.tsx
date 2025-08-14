@@ -505,19 +505,51 @@ const ChangelogModal: React.FC<{
 };
 
 const VisitCounter = () => {
-    const [count, setCount] = useState<number | null>(null);
+    const [count, setCount] = useState<string | number | null>(null);
 
     useEffect(() => {
         const fetchVisits = async () => {
             try {
-                // Using a unique namespace for this app to avoid collisions
-                const response = await fetch('https://api.counterapi.dev/v1/spendyy-app/visits/up');
-                if (!response.ok) throw new Error('Failed to fetch visit count');
-                const data = await response.json();
-                setCount(data.count);
+                // Fetch visit count. We prefer JSON, but are prepared to parse the SVG badge as a fallback.
+                const response = await fetch('https://api.visitorbadge.io/api/visitors?path=https%3A%2F%2Fnospendyy.netlify.app', {
+                    headers: {
+                        // Ask for JSON, but the server may not respect this.
+                        'Accept': 'application/json',
+                    }
+                });
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`Failed to fetch visit count: ${response.status} ${errorText}`);
+                }
+
+                const contentType = response.headers.get("content-type");
+
+                if (contentType && contentType.includes("application/json")) {
+                    // Ideal case: The server sent JSON.
+                    const data = await response.json();
+                    if (typeof data?.total !== 'number') {
+                        throw new Error(`Invalid JSON data structure received: ${JSON.stringify(data)}`);
+                    }
+                    setCount(data.total);
+                } else {
+                    // Fallback case: The server sent SVG/text, so we parse it.
+                    const responseText = await response.text();
+                    
+                    // The count is usually in an `aria-label` attribute like "Visitors: 123".
+                    // This regex is safer than parsing the full SVG.
+                    const match = responseText.match(/aria-label="[^:]+: (\d+)"/);
+                    
+                    if (match && match[1]) {
+                        const visitCount = parseInt(match[1], 10);
+                        setCount(visitCount);
+                    } else {
+                        throw new Error(`Could not parse visit count from SVG response. Content: ${responseText.substring(0, 200)}...`);
+                    }
+                }
             } catch (error) {
                 console.error("Could not fetch visit count:", error);
-                setCount(0); // Show 0 or some error state
+                setCount('N/A'); // Set to a string to indicate an error
             }
         };
         
@@ -528,7 +560,11 @@ const VisitCounter = () => {
         return <LoaderCircle size={16} className="text-slate-400 animate-spin" />;
     }
 
-    return <span className="font-mono text-sm font-semibold text-primary">{count.toLocaleString()}</span>;
+    if (typeof count === 'number') {
+        return <span className="font-mono text-sm font-semibold text-primary">{count.toLocaleString()}</span>;
+    }
+    
+    return <span className="font-mono text-sm font-semibold text-slate-500">{count}</span>;
 };
 
 
